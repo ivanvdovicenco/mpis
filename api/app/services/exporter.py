@@ -245,8 +245,8 @@ class PersonaExporter:
                     "id": str(s.id),
                     "type": s.source_type,
                     "ref": s.source_ref,
-                    "provider": s.metadata.get("provider", "unknown"),
-                    "status": s.metadata.get("status", "unknown"),
+                    "provider": s.meta.get("provider", "unknown"),
+                    "status": s.meta.get("status", "unknown"),
                     "content_hash": s.content_hash
                 }
                 for s in sources

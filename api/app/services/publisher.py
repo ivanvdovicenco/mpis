@@ -272,10 +272,20 @@ Return ONLY valid JSON."""
             ]
             provenance = result.get("provenance", {})
             
+            if not variants:
+                logger.warning("LLM returned no variants, using fallback")
+                return self._mock_variants(plan, num_variants), {"source": "fallback", "reason": "empty_response"}
+            
             return variants, provenance
         except Exception as e:
-            logger.error(f"Error generating variants: {e}")
-            return self._mock_variants(plan, num_variants), {"source": "fallback", "error": str(e)}
+            # Log the error with full context for debugging
+            logger.error(f"Error generating variants for plan {plan.id}: {e}", exc_info=True)
+            # Return fallback but mark clearly in provenance for monitoring
+            return self._mock_variants(plan, num_variants), {
+                "source": "fallback", 
+                "error": str(e),
+                "warning": "LLM generation failed, using mock content"
+            }
     
     def _mock_variants(self, plan: ContentPlan, num_variants: int) -> List[ContentVariant]:
         """Return mock variants for DRY_RUN mode."""

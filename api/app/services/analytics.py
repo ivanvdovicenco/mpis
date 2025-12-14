@@ -277,7 +277,8 @@ Return ONLY valid JSON."""
                         )
                     )
                 )
-                if existing.scalars().first():
+                existing_rollup = existing.scalars().first()
+                if existing_rollup and not request.force:
                     continue
             
             # Compute rollup
@@ -287,17 +288,35 @@ Return ONLY valid JSON."""
                 include_insights=True,
             )
             
-            rollup = AnalyticsRollup(
-                persona_id=request.persona_id,
-                rollup_type=rollup_type,
-                period_start=period_start,
-                period_end=period_end,
-                metrics=summary.metrics.model_dump(),
-                insights={"insights": summary.insights, "trends": summary.trends},
+            # Check if we should update existing or create new
+            existing_check = await self.db.execute(
+                select(AnalyticsRollup)
+                .where(
+                    and_(
+                        AnalyticsRollup.persona_id == request.persona_id,
+                        AnalyticsRollup.rollup_type == rollup_type,
+                        AnalyticsRollup.period_start == period_start,
+                    )
+                )
             )
+            existing_record = existing_check.scalars().first()
             
-            # Use merge to update existing or insert new
-            await self.db.merge(rollup)
+            if existing_record:
+                # Update existing rollup
+                existing_record.metrics = summary.metrics.model_dump()
+                existing_record.insights = {"insights": summary.insights, "trends": summary.trends}
+                existing_record.computed_at = datetime.utcnow()
+            else:
+                # Create new rollup
+                rollup = AnalyticsRollup(
+                    persona_id=request.persona_id,
+                    rollup_type=rollup_type,
+                    period_start=period_start,
+                    period_end=period_end,
+                    metrics=summary.metrics.model_dump(),
+                    insights={"insights": summary.insights, "trends": summary.trends},
+                )
+                self.db.add(rollup)
         
         await self.db.flush()
         
@@ -541,13 +560,29 @@ Return ONLY valid JSON."""
             f.write(f"# EIDOS Recommendations\n\n")
             f.write(f"Generated: {eidos.computed_at.strftime('%Y-%m-%d %H:%M')}\n\n")
             for rec in eidos.recommendations:
-                f.write(f"## {rec.get('id', '?')}. {rec.get('title', 'Untitled')}\n")
-                f.write(f"**Priority:** {rec.get('priority', 'medium')}\n")
-                f.write(f"**Category:** {rec.get('category', 'general')}\n\n")
-                f.write(f"{rec.get('description', '')}\n\n")
-                if rec.get('evidence'):
+                # Handle both dict and object formats
+                if isinstance(rec, dict):
+                    rec_id = rec.get('id', '?')
+                    rec_title = rec.get('title', 'Untitled')
+                    rec_priority = rec.get('priority', 'medium')
+                    rec_category = rec.get('category', 'general')
+                    rec_description = rec.get('description', '')
+                    rec_evidence = rec.get('evidence', [])
+                else:
+                    rec_id = getattr(rec, 'id', '?')
+                    rec_title = getattr(rec, 'title', 'Untitled')
+                    rec_priority = getattr(rec, 'priority', 'medium')
+                    rec_category = getattr(rec, 'category', 'general')
+                    rec_description = getattr(rec, 'description', '')
+                    rec_evidence = getattr(rec, 'evidence', [])
+                
+                f.write(f"## {rec_id}. {rec_title}\n")
+                f.write(f"**Priority:** {rec_priority}\n")
+                f.write(f"**Category:** {rec_category}\n\n")
+                f.write(f"{rec_description}\n\n")
+                if rec_evidence:
                     f.write("**Evidence:**\n")
-                    for e in rec.get('evidence', []):
+                    for e in rec_evidence:
                         f.write(f"- {e}\n")
                 f.write("\n---\n\n")
         

@@ -410,10 +410,19 @@ Return ONLY valid JSON."""
         
         # Parse current version number and increment
         try:
-            major, minor = current_version.version.split(".")
-            new_version = f"{major}.{int(minor) + 1}"
-        except:
-            new_version = "1.1"
+            version_parts = current_version.version.split(".")
+            if len(version_parts) >= 2:
+                major = int(version_parts[0])
+                minor = int(version_parts[1])
+                new_version = f"{major}.{minor + 1}"
+            else:
+                # Single number version, increment as minor
+                new_version = f"{current_version.version}.1"
+        except (ValueError, AttributeError):
+            # Fallback: use timestamp-based version to avoid conflicts
+            from datetime import datetime
+            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M")
+            new_version = f"1.{timestamp}"
         
         # Apply adjustments (simplified - just log them)
         new_core = dict(current_version.core_json)

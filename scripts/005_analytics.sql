@@ -2,6 +2,8 @@
 -- Tables for analytics rollups, recommendations, and experiments
 
 -- Analytics Rollups table: stores computed analytics summaries
+-- Note: Unique constraint ensures one rollup per persona/type/period.
+-- Recomputation updates existing records rather than inserting duplicates.
 CREATE TABLE IF NOT EXISTS analytics_rollups (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     persona_id UUID NOT NULL REFERENCES personas(id) ON DELETE CASCADE,

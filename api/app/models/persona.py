@@ -72,7 +72,7 @@ class Source(Base):
     source_type: Mapped[str] = mapped_column(String(20), nullable=False)
     source_ref: Mapped[str] = mapped_column(Text, nullable=False)
     content_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
+    meta: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
     extracted_text_path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, nullable=False)
     

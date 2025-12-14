@@ -145,7 +145,7 @@ class SourceCollector:
             source_type=source_type,
             source_ref=source_ref,
             content_hash=content_hash,
-            meta=metadata,
+            meta=meta,
             extracted_text_path=file_path
         )
         

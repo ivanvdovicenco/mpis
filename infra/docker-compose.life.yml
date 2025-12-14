@@ -1,0 +1,54 @@
+# MPIS Module 2: Persona Life - Docker Compose
+# 
+# This file deploys the Life module API service.
+#
+# Prerequisites:
+# - External network 'mpis_net' must exist
+# - mpis-postgres and mpis-qdrant containers must be running on mpis_net
+# - Run database migration 003_life.sql first
+#
+# Usage:
+# 1. Copy api/.env.example to /opt/mpis/infra/.env and configure
+# 2. Run: docker compose -f docker-compose.life.yml up -d
+
+version: '3.8'
+
+services:
+  life-api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    container_name: life-api
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://mpis:mpis@mpis-postgres:5432/mpis}
+      - QDRANT_URL=${QDRANT_URL:-http://mpis-qdrant:6333}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4-turbo-preview}
+      - DRY_RUN=${DRY_RUN:-false}
+      - DEBUG=${DEBUG:-false}
+      - PERSONAS_BASE_DIR=/opt/mpis/personas
+      - API_PORT=8090
+    volumes:
+      - /opt/mpis/personas:/opt/mpis/personas
+      - /opt/mpis/secrets:/opt/mpis/secrets:ro
+    ports:
+      # Life API on port 8090, localhost only
+      - "127.0.0.1:8090:8090"
+    networks:
+      - mpis_net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.mpis.service=life-api"
+      - "com.mpis.module=2"
+
+networks:
+  mpis_net:
+    external: true

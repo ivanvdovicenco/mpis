@@ -1,0 +1,284 @@
+{
+  "name": "MPIS Daily Reflection Cycle",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "daily-trigger",
+      "name": "Daily 6 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "notesInFlow": true,
+      "notes": "Trigger daily reflection at 6 AM"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://genesis-api:8080/life/cycle/start",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "persona_id",
+              "value": "={{ $env.PERSONA_ID }}"
+            },
+            {
+              "name": "cycle_type",
+              "value": "daily"
+            },
+            {
+              "name": "options",
+              "value": "={\"lookback_days\": 1, \"max_events\": 100}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "start-cycle",
+      "name": "Start Reflection Cycle",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "notesInFlow": true,
+      "notes": "Call MPIS Life API to start daily reflection"
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "wait-processing",
+      "name": "Wait for Processing",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://genesis-api:8080/life/cycle/status/{{ $json.cycle_id }}",
+        "authentication": "none",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "check-status",
+      "name": "Check Cycle Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300],
+      "notesInFlow": true,
+      "notes": "Poll for cycle completion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-awaiting",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "awaiting_approval",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-ready",
+      "name": "Ready for Approval?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_APPROVAL_CHAT_ID }}",
+        "text": "=🔄 **Daily Reflection Ready**\n\n**Cycle ID:** {{ $json.cycle_id }}\n**Persona:** {{ $json.persona_id }}\n\n**Summary:**\n{{ $json.draft.summary }}\n\n**Key Insights:**\n{{ $json.draft.key_insights.join('\\n- ') }}\n\n**Next Actions:**\n{{ $json.draft.next_actions.join('\\n- ') }}\n\n---\nReply `/approve_cycle {{ $json.cycle_id }}` to commit",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "send-reflection",
+      "name": "Send Reflection for Review",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [1340, 200],
+      "notesInFlow": true,
+      "notes": "Send reflection summary to admin for review"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://genesis-api:8080/life/cycle/approve",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cycle_id",
+              "value": "={{ $json.cycle_id }}"
+            },
+            {
+              "name": "confirm",
+              "value": true
+            },
+            {
+              "name": "apply_adjustments",
+              "value": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "approve-cycle",
+      "name": "Approve Cycle",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 200],
+      "notesInFlow": true,
+      "notes": "Commit the reflection cycle (auto-approve option)"
+    },
+    {
+      "parameters": {},
+      "id": "loop-back",
+      "name": "Loop Back",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1340, 400]
+    }
+  ],
+  "connections": {
+    "Daily 6 AM": {
+      "main": [
+        [
+          {
+            "node": "Start Reflection Cycle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Reflection Cycle": {
+      "main": [
+        [
+          {
+            "node": "Wait for Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Processing": {
+      "main": [
+        [
+          {
+            "node": "Check Cycle Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cycle Status": {
+      "main": [
+        [
+          {
+            "node": "Ready for Approval?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready for Approval?": {
+      "main": [
+        [
+          {
+            "node": "Send Reflection for Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reflection for Review": {
+      "main": [
+        [
+          {
+            "node": "Approve Cycle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Back": {
+      "main": [
+        [
+          {
+            "node": "Wait for Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "instanceId": "mpis"
+  },
+  "tags": [
+    {
+      "name": "MPIS",
+      "id": "1"
+    },
+    {
+      "name": "Life",
+      "id": "3"
+    }
+  ]
+}

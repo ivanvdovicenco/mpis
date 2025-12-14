@@ -2,43 +2,45 @@
 
 A self-hosted ecosystem for creating, developing, and analyzing AI-powered digital personas.
 
-## Module 1: Persona Genesis Engine
+## Modules
 
-The Genesis Engine creates AI personas from various source materials through an automated, human-supervised workflow.
+### Module 1: Persona Genesis Engine
+Create AI personas from various source materials through automated, human-supervised workflows.
 
-### Features
+### Module 2: Persona Life
+Continuous persona evolution through interactions, reflection cycles, and memory updates.
 
-- **Multi-Channel Source Collection**
-  - YouTube video transcripts
-  - Google Drive documents (PDF, DOCX, Google Docs)
-  - Public web enrichment (Wikipedia, search results)
+### Module 3: Social Publisher
+Plan, generate, approve, and publish content under persona voice with metrics tracking.
 
-- **AI-Powered Generation**
-  - Concept extraction (themes, virtues, tone)
-  - Complete persona_core.json generation
-  - Human approval loop with edit support
+### Module 4: Analytics Dashboard + EIDOS
+Performance analytics and AI-powered actionable recommendations.
 
-- **Production-Ready**
-  - PostgreSQL for persistence
-  - Qdrant for vector embeddings
-  - Docker deployment
-  - Full API documentation
+## Features
+
+- **Multi-Channel Source Collection**: YouTube, Google Drive, web enrichment
+- **AI-Powered Generation**: Concept extraction, persona_core.json generation
+- **Human Approval Loop**: Review, edit, and approve all outputs
+- **Reflection Cycles**: Daily/weekly persona evolution
+- **Content Publishing**: RAG-powered content generation
+- **EIDOS Recommendations**: AI-driven content strategy insights
+- **Full Provenance Tracking**: Trace all outputs to sources
+- **n8n Integration**: Ready-to-use workflow templates
 
 ## Quick Start
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- PostgreSQL container running on `mpis_net`
-- Qdrant container running on `mpis_net`
+- Docker and Docker Compose v2+
+- Ubuntu 24.04 LTS (ARM64 supported)
 - OpenAI or Anthropic API key
 
-### Server Setup (Ubuntu 24.04, ARM64)
+### Installation
 
 ```bash
 # Create required directories
-sudo mkdir -p /opt/mpis/{input,personas,sources,secrets,infra}
-sudo chown -R $USER:$USER /opt/mpis
+sudo mkdir -p /opt/mpis/{input,personas,sources,secrets,infra,tmp,exports}
+sudo chown -R 1000:1000 /opt/mpis
 
 # Clone the repository
 cd /opt/mpis
@@ -49,12 +51,15 @@ cd repo
 cp api/.env.example /opt/mpis/infra/.env
 nano /opt/mpis/infra/.env  # Add your API keys and passwords
 
-# Run database migrations
+# Run all database migrations
 docker exec -i mpis-postgres psql -U mpis -d mpis < scripts/002_genesis.sql
+docker exec -i mpis-postgres psql -U mpis -d mpis < scripts/003_life.sql
+docker exec -i mpis-postgres psql -U mpis -d mpis < scripts/004_publisher.sql
+docker exec -i mpis-postgres psql -U mpis -d mpis < scripts/005_analytics.sql
 
-# Build and start genesis-api
-cd /opt/mpis/infra
-docker compose -f docker-compose.genesis.yml up -d --build
+# Build and start MPIS API
+cd /opt/mpis/repo/infra
+docker compose -f docker-compose.full.yml up -d --build
 ```
 
 ### Verify Installation
@@ -120,7 +125,7 @@ https://youtube.com/shorts/VIDEO_ID_3
 │   ├── app/
 │   │   ├── main.py        # Application entry
 │   │   ├── config.py      # Configuration
-│   │   ├── routers/       # API endpoints
+│   │   ├── routers/       # API endpoints (genesis, life, publisher, analytics)
 │   │   ├── services/      # Business logic
 │   │   ├── models/        # SQLAlchemy models
 │   │   ├── schemas/       # Pydantic schemas
@@ -129,13 +134,24 @@ https://youtube.com/shorts/VIDEO_ID_3
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── scripts/
-│   └── 002_genesis.sql    # Database migration
+│   ├── 002_genesis.sql    # Genesis tables
+│   ├── 003_life.sql       # Life tables
+│   ├── 004_publisher.sql  # Publisher tables
+│   └── 005_analytics.sql  # Analytics tables
 ├── infra/
-│   └── docker-compose.genesis.yml
+│   ├── docker-compose.genesis.yml
+│   ├── docker-compose.life.yml
+│   ├── docker-compose.publisher.yml
+│   ├── docker-compose.analytics.yml
+│   └── docker-compose.full.yml
 ├── n8n/
 │   └── workflows/         # n8n workflow templates
 ├── docs/
+│   ├── SETUP_GUIDE.md
 │   ├── MODULE1_GENESIS_SPEC.md
+│   ├── MODULE2_LIFE_SPEC.md
+│   ├── MODULE3_PUBLISHER_SPEC.md
+│   ├── MODULE4_ANALYTICS_SPEC.md
 │   └── ENV.md
 ├── personas/              # Generated persona files
 ├── sources/               # Extracted source materials
@@ -144,12 +160,43 @@ https://youtube.com/shorts/VIDEO_ID_3
 
 ## API Endpoints
 
+### Module 1: Genesis
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/genesis/start` | Start persona generation |
 | GET | `/genesis/status/{job_id}` | Check job status |
 | POST | `/genesis/approve` | Approve or edit draft |
 | GET | `/genesis/export/{persona_id}` | Get export paths |
+
+### Module 2: Life
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/life/event` | Ingest life event |
+| POST | `/life/cycle/start` | Start reflection cycle |
+| GET | `/life/cycle/status/{cycle_id}` | Check cycle status |
+| POST | `/life/cycle/approve` | Approve cycle |
+
+### Module 3: Publisher
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/publisher/plan` | Create content plan |
+| POST | `/publisher/generate` | Generate draft |
+| GET | `/publisher/draft/{draft_id}` | Get draft |
+| POST | `/publisher/approve` | Approve draft |
+| POST | `/publisher/publish/record` | Record publish |
+| POST | `/publisher/metrics/ingest` | Ingest metrics |
+
+### Module 4: Analytics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/analytics/persona/{id}/summary` | Get analytics summary |
+| POST | `/analytics/recompute` | Trigger recomputation |
+| GET | `/analytics/recommendations/{id}` | Get EIDOS recommendations |
+| POST | `/analytics/experiments` | Create experiment |
+
+### Common
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | GET | `/health` | Health check |
 | GET | `/docs` | OpenAPI documentation |
 
@@ -196,19 +243,29 @@ pip install -r requirements.txt
 DRY_RUN=true pytest tests/ -v
 ```
 
+## n8n Workflow Templates
+
+Import ready-to-use workflows from `n8n/workflows/`:
+
+- `content-publishing.json` - Full content publishing workflow
+- `daily-reflection.json` - Daily reflection cycle automation
+
 ## Defaults & Assumptions
 
 - **LLM Provider:** OpenAI (gpt-4-turbo-preview)
 - **Embedding Model:** text-embedding-3-small (1536 dimensions)
 - **Chunk Size:** 500-1200 tokens
 - **Web Sources Limit:** 20
-- **API Port:** 8080 (internal)
+- **API Port:** 8080 (internal, localhost only)
 
-## Future Modules
+## Documentation
 
-- **Module 2:** Persona Life (metrics, reflection cycles)
-- **Module 3:** Social Publisher (content creation)
-- **Module 4:** Analytics Dashboard + EIDOS
+- [Setup Guide](docs/SETUP_GUIDE.md) - Complete installation instructions
+- [Module 1 Spec](docs/MODULE1_GENESIS_SPEC.md) - Genesis technical specification
+- [Module 2 Spec](docs/MODULE2_LIFE_SPEC.md) - Life technical specification
+- [Module 3 Spec](docs/MODULE3_PUBLISHER_SPEC.md) - Publisher technical specification
+- [Module 4 Spec](docs/MODULE4_ANALYTICS_SPEC.md) - Analytics technical specification
+- [Environment Variables](docs/ENV.md) - Configuration reference
 
 ## License
 
@@ -216,4 +273,4 @@ MIT
 
 ## Architecture
 
-See [docs/MODULE1_GENESIS_SPEC.md](docs/MODULE1_GENESIS_SPEC.md) for detailed technical specification.
+See the technical specification docs for detailed architecture information.

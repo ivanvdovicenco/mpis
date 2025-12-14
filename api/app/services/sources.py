@@ -117,7 +117,7 @@ class SourceCollector:
         source_type: str,
         source_ref: str,
         content: str,
-        metadata: dict,
+        meta: dict,
         file_path: Optional[str] = None
     ) -> Optional[Source]:
         """
@@ -127,7 +127,7 @@ class SourceCollector:
             source_type: Type of source (youtube, file, url, text)
             source_ref: Reference identifier
             content: Extracted text content
-            metadata: Additional metadata
+            meta: Additional metadata
             file_path: Path where text was saved (if applicable)
             
         Returns:
@@ -145,7 +145,7 @@ class SourceCollector:
             source_type=source_type,
             source_ref=source_ref,
             content_hash=content_hash,
-            metadata=metadata,
+            meta=metadata,
             extracted_text_path=file_path
         )
         
@@ -200,7 +200,7 @@ class SourceCollector:
                         source_type="youtube",
                         source_ref=url,
                         content="",
-                        metadata={
+                        meta={
                             "provider": "youtube",
                             "videoId": video_id,
                             "status": "failed_transcript"
@@ -218,7 +218,7 @@ class SourceCollector:
                     source_type="youtube",
                     source_ref=url,
                     content=transcript_text,
-                    metadata={
+                    meta={
                         "provider": "youtube",
                         "videoId": video_id,
                         "status": "ok"
@@ -341,7 +341,7 @@ class SourceCollector:
                         source_type="file",
                         source_ref=f"{file_id}:{file_name}",
                         content=text_content,
-                        metadata={
+                        meta={
                             "provider": "gdrive",
                             "mimeType": mime_type,
                             "title": file_name,
@@ -528,7 +528,7 @@ class SourceCollector:
                     source_type="url",
                     source_ref=url,
                     content=summary,
-                    metadata={
+                    meta={
                         "provider": "web",
                         "title": title,
                         "publisher": self._extract_domain(url),
@@ -717,7 +717,7 @@ class SourceCollector:
                     source_type="text",
                     source_ref=ref[:100],  # First 100 chars as ref
                     content=ref,
-                    metadata={
+                    meta={
                         **metadata,
                         "provider": "user_input",
                         "status": "ok"
@@ -743,7 +743,7 @@ class SourceCollector:
         result = await self.db.execute(
             select(Source)
             .where(Source.job_id == self.job_id)
-            .where(Source.metadata['status'].astext == 'ok')
+            .where(Source.meta['status'].astext == 'ok')
         )
         sources = result.scalars().all()
         

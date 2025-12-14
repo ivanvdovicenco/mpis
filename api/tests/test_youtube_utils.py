@@ -97,12 +97,13 @@ class TestParseYoutubeLinksFile:
         """Test basic file content parsing."""
         content = """https://youtube.com/watch?v=video1
 https://youtu.be/video2
-https://youtube.com/shorts/video3"""
+https://youtube.com/shorts/video3abcde"""
         
         results = parse_youtube_links_file(content)
         
         assert len(results) == 3
-        assert results[0]["video_id"] == "video1xxxxx"[:11].ljust(11, 'x') or results[0]["video_id"] is None
+        # Short video IDs (< 11 chars) are invalid, so video_id should be None
+        assert results[0]["video_id"] is None  # 'video1' is too short
     
     def test_comments_ignored(self):
         """Test that comment lines are ignored."""

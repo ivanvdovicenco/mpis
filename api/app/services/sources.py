@@ -649,9 +649,10 @@ class SourceCollector:
             if not text:
                 return None
             
-            # Limit to first 500 chars as summary (don't store full copyrighted content)
-            if len(text) > 500:
-                text = text[:500] + "..."
+            # Limit to configured max chars as summary (don't store full copyrighted content)
+            max_chars = settings.WEB_SUMMARY_MAX_CHARS
+            if len(text) > max_chars:
+                text = text[:max_chars] + "..."
             
             return text
             

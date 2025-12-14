@@ -8,17 +8,19 @@ from typing import Optional, Tuple
 
 
 # Patterns for YouTube URL formats
+# Note: YouTube video IDs are currently 11 characters, but we use {10,12}
+# for future resilience in case the format changes slightly
 YOUTUBE_PATTERNS = [
     # Standard watch URL: youtube.com/watch?v=VIDEO_ID
-    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/watch\?(?:.*&)?v=([a-zA-Z0-9_-]{11})'),
+    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/watch\?(?:.*&)?v=([a-zA-Z0-9_-]{10,12})'),
     # Short URL: youtu.be/VIDEO_ID
-    re.compile(r'(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{11})'),
+    re.compile(r'(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{10,12})'),
     # Shorts URL: youtube.com/shorts/VIDEO_ID
-    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/shorts/([a-zA-Z0-9_-]{11})'),
+    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/shorts/([a-zA-Z0-9_-]{10,12})'),
     # Embed URL: youtube.com/embed/VIDEO_ID
-    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/embed/([a-zA-Z0-9_-]{11})'),
+    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/embed/([a-zA-Z0-9_-]{10,12})'),
     # Video URL: youtube.com/v/VIDEO_ID
-    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/v/([a-zA-Z0-9_-]{11})'),
+    re.compile(r'(?:https?://)?(?:www\.)?youtube\.com/v/([a-zA-Z0-9_-]{10,12})'),
 ]
 
 

@@ -6,7 +6,7 @@ with sensible defaults for development and production.
 """
 from functools import lru_cache
 from typing import Optional, List
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
@@ -67,10 +67,14 @@ class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8080
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    # Web content summary length limit
+    WEB_SUMMARY_MAX_CHARS: int = 500
+    
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True
+    )
     
     @property
     def youtube_links_path(self) -> str:

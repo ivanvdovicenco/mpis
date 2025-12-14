@@ -46,7 +46,8 @@ class TestHealthEndpoints:
         response = await client.get("/")
         assert response.status_code == 200
         data = response.json()
-        assert "genesis" in data
+        assert "modules" in data
+        assert "genesis" in data["modules"]
 
 
 class TestGenesisEndpoints:

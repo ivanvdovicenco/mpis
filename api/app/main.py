@@ -1,7 +1,8 @@
 """
-MPIS Genesis API - Main Application
+MPIS API - Main Application
 
-FastAPI application for the Persona Genesis Engine.
+FastAPI application for the Multi-Persona Intelligence System.
+Includes Genesis, Life, Publisher, and Analytics modules.
 """
 import logging
 from contextlib import asynccontextmanager
@@ -11,7 +12,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import close_db
-from app.routers import genesis_router, health_router
+from app.routers import (
+    genesis_router, 
+    health_router,
+    life_router,
+    publisher_router,
+    analytics_router,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -39,31 +46,31 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="""
-# MPIS Genesis API
+# MPIS - Multi-Persona Intelligence System API
 
-The Persona Genesis Engine is Module 1 of the Multi-Persona Intelligence System (MPIS).
+A comprehensive API for creating, developing, and analyzing AI-powered digital personas.
 
-## Features
+## Modules
 
-- **Source Collection**: Collect from YouTube, Google Drive, and web sources
-- **Corpus Processing**: Normalize, chunk, and embed source materials
-- **Concept Extraction**: Extract themes, virtues, tone, and key ideas
-- **Persona Generation**: Generate complete persona_core.json with LLM
-- **Human Approval Loop**: Review, edit, and approve persona drafts
-- **Export**: Generate complete persona folder structure
+### Module 1: Persona Genesis Engine
+Create personas from various sources through automated, human-supervised workflow.
 
-## Workflow
+### Module 2: Persona Life
+Continuous persona evolution through real interactions, reflection cycles, and memory updates.
 
-1. **Start**: `POST /genesis/start` - Begin generation with sources
-2. **Review**: `GET /genesis/status/{job_id}` - Check progress
-3. **Approve**: `POST /genesis/approve` - Confirm or edit draft
-4. **Export**: `GET /genesis/export/{persona_id}` - Get export paths
+### Module 3: Social Publisher  
+Plan, generate, approve, schedule, and publish content under persona voice.
 
-## Source Channels
+### Module 4: Analytics Dashboard + EIDOS
+Performance analytics and AI-powered actionable recommendations.
 
-- **Channel A**: YouTube links from `youtube_links.txt`
-- **Channel B**: Google Drive folder (PDF/DOCX/Google Docs)
-- **Channel C**: Public persona web enrichment (SerpAPI/Wikipedia)
+## Quick Start
+
+1. **Create a persona**: `POST /genesis/start`
+2. **Ingest life events**: `POST /life/event`
+3. **Plan content**: `POST /publisher/plan`
+4. **Generate content**: `POST /publisher/generate`
+5. **Get recommendations**: `GET /analytics/recommendations/{persona_id}`
 """,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -83,6 +90,9 @@ app.add_middleware(
 # Include routers
 app.include_router(health_router)
 app.include_router(genesis_router)
+app.include_router(life_router)
+app.include_router(publisher_router)
+app.include_router(analytics_router)
 
 
 @app.get("/")
@@ -93,10 +103,31 @@ async def root():
         "version": settings.APP_VERSION,
         "docs": "/docs",
         "health": "/health",
-        "genesis": {
-            "start": "POST /genesis/start",
-            "status": "GET /genesis/status/{job_id}",
-            "approve": "POST /genesis/approve"
+        "modules": {
+            "genesis": {
+                "start": "POST /genesis/start",
+                "status": "GET /genesis/status/{job_id}",
+                "approve": "POST /genesis/approve"
+            },
+            "life": {
+                "event": "POST /life/event",
+                "cycle_start": "POST /life/cycle/start",
+                "cycle_status": "GET /life/cycle/status/{cycle_id}",
+                "cycle_approve": "POST /life/cycle/approve"
+            },
+            "publisher": {
+                "plan": "POST /publisher/plan",
+                "generate": "POST /publisher/generate",
+                "draft": "GET /publisher/draft/{draft_id}",
+                "approve": "POST /publisher/approve",
+                "publish_record": "POST /publisher/publish/record",
+                "metrics_ingest": "POST /publisher/metrics/ingest"
+            },
+            "analytics": {
+                "summary": "GET /analytics/persona/{persona_id}/summary",
+                "recompute": "POST /analytics/recompute",
+                "recommendations": "GET /analytics/recommendations/{persona_id}"
+            }
         }
     }
 

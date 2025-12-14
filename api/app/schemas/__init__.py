@@ -1,4 +1,4 @@
-# MPIS Genesis API - Schemas Package
+# MPIS API - Schemas Package
 from app.schemas.genesis import (
     GenesisStartRequest,
     GenesisStartResponse,
@@ -20,8 +20,41 @@ from app.schemas.persona import (
     Alignment,
     Origin,
 )
+from app.schemas.life import (
+    LifeEventCreate,
+    LifeEventResponse,
+    CycleStartRequest,
+    CycleStartResponse,
+    CycleStatusResponse,
+    CycleApproveRequest,
+    CycleApproveResponse,
+    ReflectionSummary,
+    LifeMetricResponse,
+)
+from app.schemas.publisher import (
+    ContentPlanCreate,
+    ContentPlanResponse,
+    ContentGenerateRequest,
+    ContentDraftResponse,
+    DraftApproveRequest,
+    DraftApproveResponse,
+    PublishRecordRequest,
+    PublishRecordResponse,
+    MetricsIngestRequest,
+    MetricsIngestResponse,
+)
+from app.schemas.analytics import (
+    AnalyticsSummaryRequest,
+    AnalyticsSummaryResponse,
+    RecomputeRequest,
+    RecomputeResponse,
+    EidosRecommendationsResponse,
+    ExperimentCreate,
+    ExperimentResponse,
+)
 
 __all__ = [
+    # Genesis
     "GenesisStartRequest",
     "GenesisStartResponse",
     "GenesisStatusResponse",
@@ -30,6 +63,7 @@ __all__ = [
     "EditOperation",
     "PersonaCard",
     "ProgressInfo",
+    # Persona
     "PersonaCore",
     "Credo",
     "Ethos",
@@ -39,4 +73,33 @@ __all__ = [
     "Topics",
     "Alignment",
     "Origin",
+    # Life
+    "LifeEventCreate",
+    "LifeEventResponse",
+    "CycleStartRequest",
+    "CycleStartResponse",
+    "CycleStatusResponse",
+    "CycleApproveRequest",
+    "CycleApproveResponse",
+    "ReflectionSummary",
+    "LifeMetricResponse",
+    # Publisher
+    "ContentPlanCreate",
+    "ContentPlanResponse",
+    "ContentGenerateRequest",
+    "ContentDraftResponse",
+    "DraftApproveRequest",
+    "DraftApproveResponse",
+    "PublishRecordRequest",
+    "PublishRecordResponse",
+    "MetricsIngestRequest",
+    "MetricsIngestResponse",
+    # Analytics
+    "AnalyticsSummaryRequest",
+    "AnalyticsSummaryResponse",
+    "RecomputeRequest",
+    "RecomputeResponse",
+    "EidosRecommendationsResponse",
+    "ExperimentCreate",
+    "ExperimentResponse",
 ]

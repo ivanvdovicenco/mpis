@@ -328,7 +328,7 @@ class DashboardService:
     
     async def _get_failed_runs_stats(self, hours: int) -> Dict[str, Any]:
         """Get failed runs statistics for a time period."""
-        cutoff = datetime.utcnow() - datetime.timedelta(hours=hours)
+        cutoff = datetime.utcnow() - timedelta(hours=hours)
         
         # Count total runs
         total_result = await self.db.execute(
@@ -460,6 +460,6 @@ class DashboardService:
             shares=metric.shares,
             saves=metric.saves,
             clicks=metric.clicks,
-            engagement_rate=float(metric.engagement_rate) if metric.engagement_rate else None,
+            engagement_rate=metric.engagement_rate,
             measured_at=metric.measured_at,
         )

@@ -101,7 +101,8 @@ class MetricNormalizer:
         """
         Calculate engagement rate from normalized metrics.
         
-        Formula: (reactions + comments + shares) / max(reach, views, 1)
+        Formula: (reactions + comments + shares) / max(reach, views)
+        Returns None if no denominator (reach or views) is available.
         
         Args:
             normalized_metrics: Normalized metrics dictionary

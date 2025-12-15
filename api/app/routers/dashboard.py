@@ -3,7 +3,7 @@ MPIS Dashboard API - Dashboard Router
 
 API endpoints for Dashboard system.
 """
-from uuid import UUID
+from uuid import UUID, uuid4
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -181,7 +181,7 @@ async def record_publish_proxy(
         # For now, return a mock response
         
         return PublishRecordProxyResponse(
-            published_item_id=UUID("550e8400-e29b-41d4-a716-446655440000"),
+            published_item_id=uuid4(),
             status="recorded"
         )
     except Exception as e:

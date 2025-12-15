@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS dashboard_projects (
 -- Dashboard Runs table: stores run metadata (mapping between Dashboard and MPIS)
 CREATE TABLE IF NOT EXISTS dashboard_runs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    run_id UUID NOT NULL UNIQUE,
+    run_id UUID NOT NULL UNIQUE, -- Correlation ID used for tracking across systems
     project_id UUID NOT NULL REFERENCES dashboard_projects(id) ON DELETE CASCADE,
     persona_id UUID NOT NULL REFERENCES personas(id) ON DELETE CASCADE,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN (

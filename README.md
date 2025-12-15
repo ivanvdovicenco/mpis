@@ -261,6 +261,7 @@ Import ready-to-use workflows from `n8n/workflows/`:
 ## Documentation
 
 - [Setup Guide](docs/SETUP_GUIDE.md) - Complete installation instructions
+- [Dashboard Technical Specification](docs/DASHBOARD_TECH_SPEC.md) - Dashboard observability, contracts, metrics, and developer experience
 - [Module 1 Spec](docs/MODULE1_GENESIS_SPEC.md) - Genesis technical specification
 - [Module 2 Spec](docs/MODULE2_LIFE_SPEC.md) - Life technical specification
 - [Module 3 Spec](docs/MODULE3_PUBLISHER_SPEC.md) - Publisher technical specification

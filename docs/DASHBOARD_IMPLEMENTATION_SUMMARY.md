@@ -450,6 +450,7 @@ These items are **ready to implement** based on the provided documentation and s
 4. **Authentication**: MVP uses simple password, not production-ready
 5. **Frontend**: Not implemented, only documented
 6. **Testing**: Limited to unit tests, no integration tests
+7. **datetime.utcnow() Deprecation**: The codebase uses `datetime.utcnow()` which is deprecated in Python 3.12+. This is consistent with the existing MPIS codebase and should be addressed in a separate codebase-wide refactoring PR.
 
 All of these are **by design** for the initial implementation and can be addressed in subsequent iterations.
 

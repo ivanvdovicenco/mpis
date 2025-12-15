@@ -18,6 +18,7 @@ from app.routers import (
     life_router,
     publisher_router,
     analytics_router,
+    dashboard_router,
 )
 
 # Configure logging
@@ -93,6 +94,7 @@ app.include_router(genesis_router)
 app.include_router(life_router)
 app.include_router(publisher_router)
 app.include_router(analytics_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/")

@@ -6,6 +6,10 @@ from app.models.publisher import (
     ContentPlan, ContentDraft, PublishedItem, ChannelAccount, ItemMetric
 )
 from app.models.analytics import AnalyticsRollup, EidosRecommendation, Experiment, DashboardView
+from app.models.dashboard import (
+    DashboardProject, DashboardRun, DashboardLayout, WidgetRegistry, 
+    RedFlag, MetricsIngestionJob, NormalizedMetric
+)
 
 __all__ = [
     # Genesis
@@ -34,4 +38,12 @@ __all__ = [
     "EidosRecommendation",
     "Experiment",
     "DashboardView",
+    # Dashboard
+    "DashboardProject",
+    "DashboardRun",
+    "DashboardLayout",
+    "WidgetRegistry",
+    "RedFlag",
+    "MetricsIngestionJob",
+    "NormalizedMetric",
 ]

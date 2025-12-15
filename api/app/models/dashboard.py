@@ -111,7 +111,7 @@ class RedFlag(Base):
     flag_type: Mapped[str] = mapped_column(Text, nullable=False)
     severity: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict, nullable=False)
+    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict, nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, nullable=False)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     resolved_by: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

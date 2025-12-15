@@ -268,7 +268,7 @@ class DashboardService:
             name=request.name,
             description=request.description,
             widget_type=request.widget_type,
-            schema=request.schema,
+            schema=request.widget_schema,
             renderer_url=request.renderer_url,
         )
         self.db.add(widget)
@@ -281,7 +281,7 @@ class DashboardService:
             name=widget.name,
             description=widget.description,
             widget_type=widget.widget_type,
-            schema=widget.schema,
+            widget_schema=widget.schema,
             renderer_url=widget.renderer_url,
         )
     
@@ -297,7 +297,7 @@ class DashboardService:
                 name=widget.name,
                 description=widget.description,
                 widget_type=widget.widget_type,
-                schema=widget.schema,
+                widget_schema=widget.schema,
                 renderer_url=widget.renderer_url,
             )
             for widget in widgets

@@ -118,8 +118,10 @@ class WidgetRegisterRequest(BaseModel):
     name: str = Field(..., description="Widget name")
     description: Optional[str] = Field(None, description="Widget description")
     widget_type: Literal["builtin", "custom"] = Field(..., description="Widget type")
-    schema: dict = Field(..., description="Widget schema")
+    widget_schema: dict = Field(..., description="Widget schema", alias="schema")
     renderer_url: Optional[str] = Field(None, description="Renderer URL for custom widgets")
+    
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class WidgetResponse(BaseModel):
@@ -129,8 +131,10 @@ class WidgetResponse(BaseModel):
     name: str = Field(description="Widget name")
     description: Optional[str] = Field(description="Widget description")
     widget_type: str = Field(description="Widget type")
-    schema: dict = Field(description="Widget schema")
+    widget_schema: dict = Field(description="Widget schema", alias="schema")
     renderer_url: Optional[str] = Field(description="Renderer URL")
+    
+    model_config = ConfigDict(populate_by_name=True)
 
 
 # --- Red Flags Schemas ---

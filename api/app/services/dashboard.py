@@ -5,7 +5,7 @@ Service layer for Dashboard operations.
 """
 from uuid import UUID, uuid4
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload

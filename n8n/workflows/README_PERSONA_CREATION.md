@@ -118,6 +118,11 @@ Create Persona Webhook
 - User can specify `gdrive_folder_id` in the webhook payload
 - If provided, Genesis API will import documents from that folder
 
+**Note on Performance:** The workflow lists Google Drive folders on every request to ensure fresh folder data. For high-volume scenarios, consider:
+- Caching folder information
+- Making the Google Drive step conditional based on `gdrive_folder_id` presence
+- Pre-selecting folder IDs outside the workflow
+
 ## Existing Workflows Preserved
 
 All existing workflows remain unchanged and functional:

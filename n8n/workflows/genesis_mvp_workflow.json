@@ -4,6 +4,137 @@
     {
       "parameters": {
         "httpMethod": "POST",
+        "path": "create-persona",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-create-persona",
+      "name": "Create Persona Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 100],
+      "webhookId": "create-persona",
+      "notesInFlow": true,
+      "notes": "Accepts: persona_name, description, language, public_persona, public_name, notes"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "operation": "list",
+        "options": {
+          "fields": ["id", "name", "mimeType"]
+        }
+      },
+      "id": "gdrive-list-folders",
+      "name": "List Google Drive Folders",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [450, 100],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1",
+          "name": "Google Drive Account"
+        }
+      },
+      "notesInFlow": true,
+      "notes": "Lists available Google Drive folders for persona storage"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "persona_name",
+              "name": "persona_name",
+              "value": "={{ $('Create Persona Webhook').item.json.body.persona_name }}",
+              "type": "string"
+            },
+            {
+              "id": "description",
+              "name": "description",
+              "value": "={{ $('Create Persona Webhook').item.json.body.description || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "language",
+              "name": "language",
+              "value": "={{ $('Create Persona Webhook').item.json.body.language || 'en' }}",
+              "type": "string"
+            },
+            {
+              "id": "public_persona",
+              "name": "public_persona",
+              "value": "={{ $('Create Persona Webhook').item.json.body.public_persona || false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "public_name",
+              "name": "public_name",
+              "value": "={{ $('Create Persona Webhook').item.json.body.public_name || null }}",
+              "type": "string"
+            },
+            {
+              "id": "gdrive_folder_id",
+              "name": "gdrive_folder_id",
+              "value": "={{ $('Create Persona Webhook').item.json.body.gdrive_folder_id || null }}",
+              "type": "string"
+            },
+            {
+              "id": "notes",
+              "name": "notes",
+              "value": "={{ $('Create Persona Webhook').item.json.body.notes || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "inspiration_source",
+              "name": "inspiration_source",
+              "value": "={{ $('Create Persona Webhook').item.json.body.inspiration_source || null }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "build-persona-request",
+      "name": "Build Persona Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [650, 100],
+      "notesInFlow": true,
+      "notes": "Constructs the payload for Genesis API with persona details and Google Drive folder ID"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://genesis-api:8080/genesis/start",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"persona_name\": $json.persona_name,\n  \"description\": $json.description,\n  \"language\": $json.language,\n  \"public_persona\": $json.public_persona,\n  \"public_name\": $json.public_name,\n  \"gdrive_folder_id\": $json.gdrive_folder_id,\n  \"notes\": $json.notes,\n  \"inspiration_source\": $json.inspiration_source,\n  \"sources\": []\n} }}",
+        "options": {}
+      },
+      "id": "http-create-persona",
+      "name": "Create Persona Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 100],
+      "notesInFlow": true,
+      "notes": "Sends persona creation request to Genesis API"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond-create-persona",
+      "name": "Respond Create Persona",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1050, 100]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
         "path": "genesis-start",
         "responseMode": "responseNode",
         "options": {}
@@ -123,6 +254,50 @@
     }
   ],
   "connections": {
+    "Create Persona Webhook": {
+      "main": [
+        [
+          {
+            "node": "List Google Drive Folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Google Drive Folders": {
+      "main": [
+        [
+          {
+            "node": "Build Persona Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Persona Request": {
+      "main": [
+        [
+          {
+            "node": "Create Persona Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Persona Job": {
+      "main": [
+        [
+          {
+            "node": "Respond Create Persona",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Start Genesis Webhook": {
       "main": [
         [

@@ -9,6 +9,16 @@ from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
 
+# --- Shared ---
+
+class PersonaSummary(BaseModel):
+    """Summary info for a persona."""
+    id: UUID
+    name: str
+    active_version: str
+    created_at: datetime
+
+
 # --- Dashboard Project Schemas ---
 
 class DashboardProjectCreate(BaseModel):

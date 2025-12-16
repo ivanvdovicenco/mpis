@@ -16,7 +16,7 @@ def validate_workflow(workflow_path: Path) -> bool:
     print("=" * 60)
     
     try:
-        with open(workflow_path, 'r') as f:
+        with open(workflow_path, 'r', encoding='utf-8') as f:
             workflow = json.load(f)
     except json.JSONDecodeError as e:
         print(f"✗ Invalid JSON: {e}")

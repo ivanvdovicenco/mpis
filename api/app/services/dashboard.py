@@ -7,8 +7,7 @@ from uuid import UUID, uuid4
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, func, and_, desc
 
 from app.models.dashboard import (
     DashboardProject,
@@ -19,8 +18,10 @@ from app.models.dashboard import (
     MetricsIngestionJob,
     NormalizedMetric,
 )
+from app.models.persona import Persona
 from app.models.publisher import PublishedItem, ItemMetric
 from app.schemas.dashboard import (
+    PersonaSummary,
     DashboardProjectCreate,
     DashboardProjectResponse,
     DashboardRunCreate,
@@ -40,12 +41,49 @@ from app.services.metric_normalizer import MetricNormalizer
 
 class DashboardService:
     """Service for Dashboard operations."""
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+
+    # --- Personas ---
+
+    async def list_personas(self) -> List[PersonaSummary]:
+        """List personas for dashboard UI."""
+        result = await self.db.execute(
+            select(Persona).order_by(desc(Persona.created_at))
+        )
+        personas = result.scalars().all()
+
+        return [
+            PersonaSummary(
+                id=persona.id,
+                name=persona.name,
+                active_version=persona.active_version,
+                created_at=persona.created_at,
+            )
+            for persona in personas
+        ]
+
     # --- Project Management ---
-    
+
+    async def list_projects(self) -> List[DashboardProjectResponse]:
+        """List dashboard projects."""
+        result = await self.db.execute(
+            select(DashboardProject).order_by(desc(DashboardProject.created_at))
+        )
+        projects = result.scalars().all()
+
+        return [
+            DashboardProjectResponse(
+                id=project.id,
+                name=project.name,
+                persona_id=project.persona_id,
+                channels=project.channels,
+                created_at=project.created_at,
+            )
+            for project in projects
+        ]
+
     async def create_project(self, request: DashboardProjectCreate) -> DashboardProjectResponse:
         """Create a new dashboard project."""
         project = DashboardProject(

@@ -5,12 +5,12 @@ API endpoints for Dashboard system.
 """
 from uuid import UUID, uuid4
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-import httpx
 
 from app.database import get_db
 from app.schemas.dashboard import (
+    PersonaSummary,
     DashboardProjectCreate,
     DashboardProjectResponse,
     DashboardRunCreate,
@@ -33,6 +33,40 @@ from app.schemas.dashboard import (
 from app.services.dashboard import DashboardService
 
 router = APIRouter(prefix="/api", tags=["Dashboard"])
+
+
+# --- Personas & Projects (Lists) ---
+
+@router.get(
+    "/personas",
+    response_model=List[PersonaSummary],
+    summary="List personas",
+    description="List all personas for dashboard UI.",
+)
+async def list_personas(
+    db: AsyncSession = Depends(get_db),
+) -> List[PersonaSummary]:
+    try:
+        service = DashboardService(db)
+        return await service.list_personas()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.get(
+    "/projects",
+    response_model=List[DashboardProjectResponse],
+    summary="List projects",
+    description="List dashboard projects.",
+)
+async def list_projects(
+    db: AsyncSession = Depends(get_db),
+) -> List[DashboardProjectResponse]:
+    try:
+        service = DashboardService(db)
+        return await service.list_projects()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # --- Dashboard Projects ---
@@ -351,14 +385,20 @@ async def start_persona_creation(
 ) -> dict:
     """Start persona creation (proxy to Genesis)."""
     try:
-        # In production, forward to MPIS Genesis API
-        # For now, return a mock response
-        return {
-            "job_id": "770e8400-e29b-41d4-a716-446655440002",
-            "status": "started",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Persona creation failed: {str(e)}")
+        from app.services.genesis import GenesisService
+        from app.schemas.genesis import GenesisStartRequest
+
+        service = GenesisService(db)
+        genesis_request = GenesisStartRequest(
+            persona_name=request.persona_name,
+            inspiration_source=request.inspiration_source,
+            language=request.language,
+            notes=request.notes,
+        )
+        response = await service.start_genesis(genesis_request)
+        return {"job_id": response.job_id, "status": response.status}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Persona creation failed: {str(exc)}")
 
 
 @router.get(
